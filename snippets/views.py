@@ -1,64 +1,39 @@
 from django.contrib.auth.models import User
-from rest_framework import generics, permissions, renderers
-from rest_framework.decorators import api_view
+from rest_framework import permissions, renderers, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 
 from .models import Snippet
 from .permissions import IsOwnerOrReadyOnly
 from .serializers import SnippetSerializer, UserSerializer
 
+"""
 
-@api_view(['GET'])
-def api_root(request, *args, **kwargs):
-    return Response({
-        'users': reverse('user-list', request=request, *args, **kwargs),
-        'snippets': reverse('snippet-list', request=request, *args, **kwargs),
-    })
+"""
 
 
-class SnippetList(generics.ListCreateAPIView):
-    """
-    List snippets or create a new one
-    """
+class SnippetViewSet(viewsets.ModelViewSet):
+    # This viewset automatically provides `list`, `create`, `retrieve`, `update` and `destroy` actions.
+    # Additionally we also provide an extra `highlight` action.
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [
+        # Read-write access for authenticated user. Read-only access for others.
+        permissions.IsAuthenticatedOrReadOnly,
+        # Only owner of an object can edit/delete it. Read-only access for others.
+        IsOwnerOrReadyOnly,
+    ]
 
-    # ensure that authenticated requests get read-write access,
-    # and unauthenticated requests get read-only access
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
 
-class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    View, update or delete one snippet by its primary key
-    """
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-
-    # ensure that authenticated requests get read-write access,
-    # and unauthenticated requests get read-only access
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadyOnly]
-
-
-class SnippetHighlight(generics.GenericAPIView):
-    queryset = Snippet.objects.all()
-    renderer_classes = [renderers.StaticHTMLRenderer]
-
-    def get(self, request, *args, **kwargs):
-        snippet = self.get_object()
-        return Response(snippet.highlighted)
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    # This viewset automatically provides `list` and `detail` actions
     queryset = User.objects.all()
     serializer_class = UserSerializer
