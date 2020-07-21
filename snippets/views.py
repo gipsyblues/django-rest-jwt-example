@@ -7,10 +7,6 @@ from .models import Snippet
 from .permissions import IsOwnerOrReadyOnly
 from .serializers import SnippetSerializer, UserSerializer
 
-"""
-
-"""
-
 
 class SnippetViewSet(viewsets.ModelViewSet):
     # This viewset automatically provides `list`, `create`, `retrieve`, `update` and `destroy` actions.

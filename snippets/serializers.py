@@ -5,7 +5,7 @@ from snippets.models import Snippet
 
 
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.HyperlinkedRelatedField(view_name='user-detail', read_only=True)
     highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
 
     class Meta:
