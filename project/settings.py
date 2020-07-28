@@ -22,8 +22,7 @@ DEBUG = os.environ.get('DEBUG') == 'TRUE'
 
 if DEBUG:
     SECRET_KEY = '5%#7%@bv3s8ob)$rbsg_@m*@9y^=&!cp0)e4od_lh$l5a7mc40'
-    # Database
-    # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -34,6 +33,11 @@ else:
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = os.environ.get('SECRET_KEY')
     ALLOWED_HOSTS = []
+    # Database
+    # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+    DATABASES = {
+        'default': {}
+    }
 
 # Application definition
 
@@ -44,8 +48,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
+    # rest_framework provides all needed tools to make REST API
     'rest_framework',
+    'rest_framework.authtoken',
+    # allauth packages are required by dj_rest_auth to enable registration
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # dj_rest_auth provides api endpoint for all auth methods
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
     'snippets.apps.SnippetsConfig',
 ]
@@ -84,18 +98,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -114,10 +120,25 @@ STATIC_URL = '/static/'
 
 # Applications
 
+SITE_ID = 1
+
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # For browsable API login button
+        'rest_framework.authentication.SessionAuthentication',
+        # For API frontends (JWT tokens)
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
 }
+
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'token'

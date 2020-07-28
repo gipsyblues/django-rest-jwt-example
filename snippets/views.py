@@ -10,9 +10,9 @@ from .serializers import SnippetSerializer, UserSerializer
 
 class SnippetViewSet(viewsets.ModelViewSet):
     # This viewset automatically provides `list`, `create`, `retrieve`, `update` and `destroy` actions.
-    # Additionally we also provide an extra `highlight` action.
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+
     permission_classes = [
         # Read-write access for authenticated user. Read-only access for others.
         permissions.IsAuthenticatedOrReadOnly,
@@ -20,6 +20,7 @@ class SnippetViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadyOnly,
     ]
 
+    # Additionally we also provide an extra `highlight` action.
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
     def highlight(self, request, *args, **kwargs):
         snippet = self.get_object()
