@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.db import models
+from pygments import highlight
+from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import get_all_lexers, get_lexer_by_name
 from pygments.styles import get_all_styles
-from pygments.formatters.html import HtmlFormatter
-from pygments import highlight
 
 LEXERS = [item for item in get_all_lexers() if item[1]]
 LANGUAGE_CHOICES = sorted((item[1][0], item[0]) for item in LEXERS)
@@ -10,7 +11,7 @@ STYLE_CHOICES = sorted((item, item) for item in get_all_styles())
 
 
 class Snippet(models.Model):
-    owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='snippets', on_delete=models.CASCADE)
     title = models.CharField(max_length=100, blank=True, default='')
     code = models.TextField()
     highlighted = models.TextField()
