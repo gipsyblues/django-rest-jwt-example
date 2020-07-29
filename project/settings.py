@@ -17,10 +17,12 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG is always TRUE on local dev server and always FALSE in production
 DEBUG = os.environ.get('DEBUG') == 'TRUE'
 
 if DEBUG:
+    # Local dev server settings
+
     SECRET_KEY = '5%#7%@bv3s8ob)$rbsg_@m*@9y^=&!cp0)e4od_lh$l5a7mc40'
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DATABASES = {
@@ -29,7 +31,10 @@ if DEBUG:
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+
 else:
+    # Production settings
+
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = os.environ.get('SECRET_KEY')
     ALLOWED_HOSTS = []
@@ -43,16 +48,15 @@ else:
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'django.contrib.auth',
+    'django.contrib.auth',  # required by allauth
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.messages',  # required by allauth
     'django.contrib.staticfiles',
-    'django.contrib.sites',
+    'django.contrib.sites',  # required by allauth
 
-    # rest_framework provides all needed tools to make REST API
     'rest_framework',
-    'rest_framework.authtoken',
+    'rest_framework.authtoken',  # required by dj_rest_auth to enable registration
     # allauth packages are required by dj_rest_auth to enable registration
     'allauth',
     'allauth.account',
@@ -61,6 +65,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
 
+    'accounts.apps.AccountsConfig',  # implements custom User model
     'snippets.apps.SnippetsConfig',
 ]
 
@@ -94,6 +99,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Custom user model to make emails unique and usernames not required
+AUTH_USER_MODEL = 'accounts.User'
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -118,10 +133,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Applications
+##########################
+# Installed apps configs #
+##########################
 
+# django.contrib.sites
 SITE_ID = 1
 
+# rest_framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -136,9 +155,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-ACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
+# allauth
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
+# dj_rest_auth
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'token'
