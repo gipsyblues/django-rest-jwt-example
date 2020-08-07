@@ -22,15 +22,13 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # Environment
 
 DEBUG = environ.get("DEBUG") == "TRUE"
+SECRET_KEY = environ.get("SECRET_KEY")
 
 if DEBUG:
     # Local dev server settings
-    SECRET_KEY = "5%#7%@bv3s8ob)$rbsg_@m*@9y^=&!cp0)e4od_lh$l5a7mc40"
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 else:
     # Production settings
-    SECRET_KEY = environ.get("SECRET_KEY")
     ALLOWED_HOSTS = []
 
 
@@ -92,8 +90,12 @@ WSGI_APPLICATION = "project.wsgi.application"
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": environ.get("POSTGRES_DB"),
+        "USER": environ.get("POSTGRES_USER"),
+        "PASSWORD": environ.get("POSTGRES_PASSWORD"),
+        "HOST": environ.get("POSTGRES_HOST"),
+        "PORT": 5432,
     }
 }
 
