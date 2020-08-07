@@ -11,17 +11,19 @@ STYLE_CHOICES = sorted((item, item) for item in get_all_styles())
 
 
 class Snippet(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='snippets', on_delete=models.CASCADE)
-    title = models.CharField(max_length=100, blank=True, default='')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, "snippets")
+    title = models.CharField(max_length=100, blank=True, default="")
     code = models.TextField()
     highlighted = models.TextField()
     linenos = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGE_CHOICES, default='python', max_length=50)
-    style = models.CharField(choices=STYLE_CHOICES, default='friendly', max_length=50)
+    language = models.CharField(
+        choices=LANGUAGE_CHOICES, default="python", max_length=50
+    )
+    style = models.CharField(choices=STYLE_CHOICES, default="friendly", max_length=50)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['created']
+        ordering = ["created"]
 
     def save(self, *args, **kwargs):
         """
@@ -29,8 +31,10 @@ class Snippet(models.Model):
         representation of the code snipped
         """
         lexer = get_lexer_by_name(self.language)
-        linenos = 'table' if self.linenos else False
-        options = {'title': self.title} if self.title else {}
-        formatter = HtmlFormatter(style=self.style, linenos=linenos, full=True, **options)
+        linenos = "table" if self.linenos else False
+        options = {"title": self.title} if self.title else {}
+        formatter = HtmlFormatter(
+            style=self.style, linenos=linenos, full=True, **options
+        )
         self.highlighted = highlight(self.code, lexer, formatter)
         return super().save(*args, **kwargs)
