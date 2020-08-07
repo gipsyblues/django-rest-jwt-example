@@ -3,3 +3,4 @@ JWT auth and registration example (on top of example from Django REST Framework 
 - JWT auth using djangorestframework-simplejwt
 - API user registration using dj-rest-auth
 - Custom User model to replace usernames with emails
+- Dockerized
